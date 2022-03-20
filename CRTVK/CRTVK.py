@@ -15,8 +15,8 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 
 from responses import responses
 armed_stat = None
-group_id ='196554920'  #id группы вк с ботом
-token = "8e4b3482b35bb38baf15285b3d899155bb27b0fc483d726f36f4694352e42ffd9a09d268e0debc73cc875"  #Токен бота
+group_id ='Your group id' 
+token = "Your vk bot token" 
 
 
 vk_session = vk_api.VkApi(token=token)
@@ -24,8 +24,8 @@ longpoll = VkBotLongPoll(vk_session, group_id)  #Проходим авториз
 vk = vk_session.get_api()
 VkUpload = VkUpload(vk)
 
-sio = socketio.Client()
- #Подключаемся к серверу согласно документации python socketio
+sio = socketio.Client() #Create an instance of the class according to the socket io documentation
+
 
 
 with open("users.json", "r") as read_file: #Читаем json файл с данными о пользователях
@@ -128,7 +128,7 @@ for event in longpoll.listen(): #Ждём события от vk_api
 		try:
 
 			if user_id not in users_info: #Проверяем, есть ли id нашего пользователя в базе данных
-				users_info[user_id] = {'lang':None, 'location_stat':None, 'report_mode': None, 'send_mode': None, 'login_stat':[False,False], 'uid':None, 'return_settings':{'to':None, 'speed':None, 'alt':None, 'action': None}} #Если нет, то присваиваем пользователю по id стандартный набор значений
+				users_info[user_id] = {'lang':None, 'location_stat':None, 'report_mode': None, 'send_mode': None, 'login_stat':False, 'uid':None, 'return_settings':{'to':None, 'speed':None, 'alt':None, 'action': None}, 'login':None, 'password':None} #Если нет, то присваиваем пользователю по id стандартный набор значений
 				Main.write_db(users_info = users_info) #Перезаписываем json файл, пополняя его актуальными данными
 
 			if users_info[user_id]['lang'] == 'ru' or users_info[user_id]['lang'] == 'en':
@@ -149,31 +149,34 @@ for event in longpoll.listen(): #Ждём события от vk_api
 				Main.write_db(users_info=users_info)
 				Main.send_msg(message = resp['auth'][0], keyboard = Keyboards.keyboard_login.get_keyboard())
 
-			if text.lower() == 'sign in' and users_info[user_id]['lang'] != None and users_info[user_id]['uid'] == None and users_info[user_id]['login_stat'][0] == False and users_info[user_id]['login_stat'][1] == False:
-				Main.send_msg(message=resp['auth'][1])
-				users_info[user_id]['login_stat'][0] = True
+			if (text.lower() == 'sign in' or users_info[user_id]['login_stat'] == True) and users_info[user_id]['lang'] != None and users_info[user_id]['uid'] == None:
+				users_info[user_id]['login_stat'] = True
 
-			if users_info[user_id]['login_stat'][0] == True and text.lower() != 'sign in':
-				Main.send_msg(message = resp['auth'][2])
-				login = text.lower()
-				users_info[user_id]['login_stat'][0] = False
-				users_info[user_id]['login_stat'][1] = True
+				if users_info[user_id]['login'] == None:
+					Main.send_msg(message = resp['auth'][1])
 
-			elif users_info[user_id]['login_stat'][1] == True and text.lower != login:
-				users_info[user_id]['login_stat'][1] = False
-				password = text
-				sio.emit('signin',{'nickname': login, 'password': password})
-				time.sleep(3)
-				@sio.on('signinres')
-				def on_message(res):
-					if res['body'] == "nickname_error":
-						Main.send_msg(message = resp['auth'][3], keyboard = Keyboards.keyboard_login.get_keyboard())
-					elif res['body'] == "password_error":
-						Main.send_msg(message = resp['auth'][4], keyboard = Keyboards.keyboard_login.get_keyboard())
-					elif res['body'] == "successful":
-						users_info[user_id]['uid'] = res['uid']
-						Main.write_db(users_info = users_info)
-						Main.send_msg(message = resp['auth'][5], keyboard = Keyboards.keyboard_menu.get_keyboard())
+				if text.lower() != 'sign in' and users_info[user_id]['login'] == None:
+					users_info[user_id]['login'] = text.lower()
+
+				elif text.lower() != 'sign in' and text.lower() != users_info[user_id]['login'] and users_info[user_id]['login'] != None:
+					users_info[user_id]['password'] = text
+					sio.emit('signin',{'nickname': users_info[user_id]['login'], 'password': users_info[user_id]['password']})
+					users_info[user_id]['login_stat'] = False
+					@sio.on('signinres')
+					def on_message(res):
+						if res['body'] == "nickname_error":
+							Main.send_msg(message = resp['auth'][2], keyboard = Keyboards.keyboard_login.get_keyboard())
+
+						elif res['body'] == "password_error":
+							Main.send_msg(message = resp['auth'][3], keyboard = Keyboards.keyboard_login.get_keyboard())
+
+						elif res['body'] == "successful":
+							users_info[user_id]['uid'] = res['uid']
+							Main.write_db(users_info = users_info)
+							Main.send_msg(message = resp['auth'][4], keyboard = Keyboards.keyboard_menu.get_keyboard())
+							users_info[user_id].pop('login')
+							users_info[user_id].pop('password')
+							Main.write_db(users_info = users_info)
 
 
 
