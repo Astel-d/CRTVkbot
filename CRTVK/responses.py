@@ -9,7 +9,7 @@ responses = {
 		'settings':['Отлично!Далее введите название аргумента и ЧЕРЕЗ ПРОБЕЛ его значение(Примеры ниже), учтите, что скорость не должна превышать 10(м/с), высота не должна превышать 100(м), действие может иметь значения "hover" и "land", а место возврата "user" и "takeoff".\n speed 9\n alt 3\n action hover\n to user'],
 		'auth':[
 				'Отлично, далее авторизуйтесь.',
-				'Введите логин.', 'Введите Пароль.',
+				'!!!Отправьте сначала логин, а потом пароль!!!',
 				'Такого пользователя не существует. Проверьте праильность логина или пройдите регистрацию на сайте, а потом повторите попытку. https://bit.ly/3tWpqCw',
 				'Неверный пароль, попробуйте ещё раз.',
 				'Успешно.'
@@ -29,7 +29,7 @@ responses = {
 		'location':["Submit your location using the instructions below.", "It doesn't look like a geolocation."],
 		'auth':[
 				'Great, then log in.',
-				'Enter login.', 'Enter password.',
+				'!!!Send your login first, and then the password!!!',
 				'Such a user does not exist. Check if your login is correct or register on the site, and then try again. https://bit.ly/3tWpqCw',
 				'Wrong password, please try again.',
 				'Successfully.'
