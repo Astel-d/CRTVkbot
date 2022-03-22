@@ -14,9 +14,10 @@ from vk_api.upload import VkUpload
 from vk_api.longpoll import VkLongPoll, VkEventType
 
 from responses import responses
-armed_stat = None
-group_id ='196554920' 
-token = "0a0fc392055c38d4146fe137319d2240353a40957cf280c81ca220bc36e5d6e28fc044e711f4b55a9cc78" 
+
+
+group_id ='Your group id' 
+token = "Your token" 
 
 
 vk_session = vk_api.VkApi(token=token)
