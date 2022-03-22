@@ -15,8 +15,8 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 
 from responses import responses
 armed_stat = None
-group_id ='Your group id' 
-token = "Your vk bot token" 
+group_id ='196554920' 
+token = "0a0fc392055c38d4146fe137319d2240353a40957cf280c81ca220bc36e5d6e28fc044e711f4b55a9cc78" 
 
 
 vk_session = vk_api.VkApi(token=token)
@@ -54,7 +54,7 @@ class Main():
 		doc_name = doc_name
 		url = url
 		urllib.request.urlretrieve(url, doc_name) #Скачивание файла по прямой ссылке, предоставляемой vk_api
-		f = open(doc_name, 'r') #Открытие файла
+		f = open(doc_name, 'r', encoding='utf-8') #Открытие файла
 		file = f.read() #Чтение файла
 		sio.emit('newMission', file) #Отправка файла на сервер
 
@@ -110,7 +110,7 @@ for event in longpoll.listen(): #Ждём события от vk_api
 		peer_id = vk_message['peer_id'] #id диалога(в нашем случае будет равен user_id)
 		text = vk_message['text'] #Получаем текст сообщения пользователя
 		try:
-		    sio.connect('https://48c5-94-29-124-254.eu.ngrok.io/', wait_timeout = 3)
+			sio.connect('https://48c5-94-29-124-254.eu.ngrok.io/', wait_timeout = 3)
 		except socketio.exceptions.ConnectionError:
 			time.sleep(1)
 
@@ -209,20 +209,22 @@ for event in longpoll.listen(): #Ждём события от vk_api
 
 
 				if text.lower() == 'send file' and users_info[user_id]['send_mode'] == False:
-      				send_msg(message = "Отправьте файл для загрузки на коптер")
-      				users_info[user_id]['send_mode'] = True
-    				try:
-      					if users_info[user_id]['send_mode'] == True and text.lower() == 'send file':
-        					pass
-      					elif users_info[user_id]['send_mode'] == True and vk_message['attachments'][0]['type'] != 'doc':
-        					send_msg("Это не похоже на код")
-      					elif users_info[user_id]['send_mode'] == True and vk_message['attachments'][0]['type'] == 'doc' and vk_message['attachments'][0]['doc']['ext'] == 'py':
-        					send_code(url = vk_message['attachments'][0]['doc']['url'], doc_name = 'code_' + str(user_id) + '.py')
-        					os.remove('code_' + str(user_id) + '.py')
-        					users_info[user_id]['send_mode'] = False
-        					send_msg(message = 'Выполняю')
-    			except IndexError:
-      				send_msg('Это не похоже на код')
+					Main.send_msg(message = "Отправьте файл для загрузки на коптер")
+					users_info[user_id]['send_mode'] = True
+				try:
+					print(users_info[user_id]['send_mode'])
+					if users_info[user_id]['send_mode'] == True and text.lower() == 'send file':
+						pass
+					elif users_info[user_id]['send_mode'] == True and vk_message['attachments'][0]['type'] != 'doc':
+						print('ok')
+						Main.send_msg("Это не похоже на код")
+					elif users_info[user_id]['send_mode'] == True and vk_message['attachments'][0]['type'] == 'doc' and vk_message['attachments'][0]['doc']['ext'] == 'py':
+						Main.send_code(url = vk_message['attachments'][0]['doc']['url'], doc_name = 'code_' + str(user_id) + '.py')
+						os.remove('code_' + str(user_id) + '.py')
+						users_info[user_id]['send_mode'] = False
+						Main.send_msg(message = 'Выполняю')
+				except Exception as E:
+					print(E)
 
 
 				if text.lower() == 'return settings':
@@ -262,10 +264,10 @@ for event in longpoll.listen(): #Ждём события от vk_api
 						users_info[user_id]['location_stat'] = False
 						pass
 					if users_info[user_id]['return_settings']['to'] == 'user':
-					    print(type(vk_message['geo']['coordinates']['latitude']))
-					    print('ok3')
-					    sio.emit('req', {'body':'returnToHome', 'data':{'to':'user', 'lat':vk_message['geo']['coordinates']['latitude'], 'lon':vk_message['geo']['coordinates']['longitude'], 'alt':users_info[user_id]['return_settings']['alt'], 'speed':users_info[user_id]['return_settings']['speed'], 'action':users_info[user_id]['return_settings']['action']}})
-					    users_info[user_id]['location_stat'] = False
+						print(type(vk_message['geo']['coordinates']['latitude']))
+						print('ok3')
+						sio.emit('req', {'body':'returnToHome', 'data':{'to':'user', 'lat':vk_message['geo']['coordinates']['latitude'], 'lon':vk_message['geo']['coordinates']['longitude'], 'alt':users_info[user_id]['return_settings']['alt'], 'speed':users_info[user_id]['return_settings']['speed'], 'action':users_info[user_id]['return_settings']['action']}})
+						users_info[user_id]['location_stat'] = False
 					elif users_info[user_id]['return_settings']['to'] == 'takeoff':
 						print('ok4')
 						users_info[user_id]['location_stat'] = False
