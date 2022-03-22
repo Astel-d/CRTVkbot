@@ -128,7 +128,7 @@ for event in longpoll.listen(): #Ждём события от vk_api
 		try:
 
 			if user_id not in users_info: #Проверяем, есть ли id нашего пользователя в базе данных
-				users_info[user_id] = {'lang':None, 'location_stat':None, 'report_mode': None, 'send_mode': None, 'login_stat':False, 'uid':None, 'return_settings':{'to':None, 'speed':None, 'alt':None, 'action': None}, 'login':None, 'password':None} #Если нет, то присваиваем пользователю по id стандартный набор значений
+				users_info[user_id] = {'lang':None, 'location_stat':None, 'report_mode': None, 'send_mode': False, 'login_stat':False, 'uid':None, 'return_settings':{'to':None, 'speed':None, 'alt':None, 'action': None}, 'login':None, 'password':None} #Если нет, то присваиваем пользователю по id стандартный набор значений
 				Main.write_db(users_info = users_info) #Перезаписываем json файл, пополняя его актуальными данными
 
 			if users_info[user_id]['lang'] == 'ru' or users_info[user_id]['lang'] == 'en':
@@ -207,8 +207,23 @@ for event in longpoll.listen(): #Ждём события от vk_api
 						Main.send_msg(message = resp['photo'], attachment = 'photo' + str(photo_upload[0]['owner_id']) + "_" + str(photo_upload[0]['id']))
 						os.remove(photo_name)
 
-				if text.lower() == 'st':
-					print
+
+				if text.lower() == 'send file' and users_info[user_id]['send_mode'] == False:
+      				send_msg(message = "Отправьте файл для загрузки на коптер")
+      				users_info[user_id]['send_mode'] = True
+    				try:
+      					if users_info[user_id]['send_mode'] == True and text.lower() == 'send file':
+        					pass
+      					elif users_info[user_id]['send_mode'] == True and vk_message['attachments'][0]['type'] != 'doc':
+        					send_msg("Это не похоже на код")
+      					elif users_info[user_id]['send_mode'] == True and vk_message['attachments'][0]['type'] == 'doc' and vk_message['attachments'][0]['doc']['ext'] == 'py':
+        					send_code(url = vk_message['attachments'][0]['doc']['url'], doc_name = 'code_' + str(user_id) + '.py')
+        					os.remove('code_' + str(user_id) + '.py')
+        					users_info[user_id]['send_mode'] = False
+        					send_msg(message = 'Выполняю')
+    			except IndexError:
+      				send_msg('Это не похоже на код')
+
 
 				if text.lower() == 'return settings':
 					settings_stat = True
