@@ -211,15 +211,14 @@ try:
 						Main.send_photo()
 
 
-					if text.lower() == 'send file' and users_info[user_id]['send_mode'] == False:
+					if text.lower() == 'send code' and users_info[user_id]['send_mode'] == False:
 						Main.send_msg(message = "Отправьте файл для загрузки на коптер")
 						users_info[user_id]['send_mode'] = True
 					try:
 						print(users_info[user_id]['send_mode'])
-						if users_info[user_id]['send_mode'] == True and text.lower() == 'send file':
+						if users_info[user_id]['send_mode'] == True and text.lower() == 'send code':
 							pass
 						elif users_info[user_id]['send_mode'] == True and vk_message['attachments'][0]['type'] != 'doc':
-							print('ok')
 							Main.send_msg("Это не похоже на код")
 						elif users_info[user_id]['send_mode'] == True and vk_message['attachments'][0]['type'] == 'doc' and vk_message['attachments'][0]['doc']['ext'] == 'py':
 							Main.send_code(url = vk_message['attachments'][0]['doc']['url'], doc_name = 'code_' + str(user_id) + '.py')
