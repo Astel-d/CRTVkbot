@@ -18,7 +18,7 @@ from responses import responses
 
 
 group_id ='Your group id' 
-token = "your token" 
+token = "Your group token" 
 
 
 vk_session = vk_api.VkApi(token=token)
@@ -91,6 +91,7 @@ class Keyboards():
 	keyboard_language = VkKeyboard(one_time=True)
 	keyboard_login = VkKeyboard(one_time=True)
 	stop = VkKeyboard(one_time=True)
+	location = VkKeyboard(one_time=False)
 
 	keyboard_menu.add_button('Land', color=VkKeyboardColor.POSITIVE) #Заполняем keyboard_menu
 	keyboard_menu.add_button('Hover', color=VkKeyboardColor.POSITIVE)
@@ -104,6 +105,9 @@ class Keyboards():
 	keyboard_menu.add_button('Return settings', color = VkKeyboardColor.PRIMARY)
 
 	stop.add_button('Stop', color=VkKeyboardColor.NEGATIVE)
+
+	location.add_location_button()
+	location.add_button('Stop', color=VkKeyboardColor.NEGATIVE)
 
 	keyboard_language.add_button('ru', VkKeyboardColor.POSITIVE) #Заполняем keyboard_language
 	keyboard_language.add_button('en',VkKeyboardColor.POSITIVE)
@@ -211,14 +215,15 @@ try:
 						Main.send_photo()
 
 
-					if text.lower() == 'send code' and users_info[user_id]['send_mode'] == False:
+					if text.lower() == 'send file' and users_info[user_id]['send_mode'] == False:
 						Main.send_msg(message = "Отправьте файл для загрузки на коптер")
 						users_info[user_id]['send_mode'] = True
 					try:
 						print(users_info[user_id]['send_mode'])
-						if users_info[user_id]['send_mode'] == True and text.lower() == 'send code':
+						if users_info[user_id]['send_mode'] == True and text.lower() == 'send file':
 							pass
 						elif users_info[user_id]['send_mode'] == True and vk_message['attachments'][0]['type'] != 'doc':
+							print('ok')
 							Main.send_msg("Это не похоже на код")
 						elif users_info[user_id]['send_mode'] == True and vk_message['attachments'][0]['type'] == 'doc' and vk_message['attachments'][0]['doc']['ext'] == 'py':
 							Main.send_code(url = vk_message['attachments'][0]['doc']['url'], doc_name = 'code_' + str(user_id) + '.py')
@@ -228,26 +233,31 @@ try:
 					except Exception as E:
 						print(E)
 
-
-					if text.lower() == 'return':
+					if text.lower() == 'return' or users_info[user_id]['location_stat']== True:
+						if users_info[user_id]['location_stat'] == False and users_info[user_id]['return_settings']['to'] == 'user' and users_info[user_id]['return_settings']['speed'] != None and users_info[user_id]['return_settings']['alt'] != None and users_info[user_id]['return_settings']['action'] != None and users_info[user_id]['return_settings']['to'] != None:
+							Main.send_msg(message = 'Отправьте геометку', keyboard = Keyboards.location.get_keyboard())
 						users_info[user_id]['location_stat'] = True
-						print('ok')
-					if users_info[user_id]['location_stat'] == True and text.lower() != 'return':
-						print('yes')
-						if users_info[user_id]['location_stat'] == True and text.lower() == "stop":
-							users_info[user_id]['location_stat'] = False
-						try:
-							if users_info[user_id]['return_settings']['to'] == 'user':
-								print(type(vk_message['geo']['coordinates']['latitude']))
-								print('ok3')
-								sio.emit('req', {'body':'returnToHome', 'data':{'to':'user', 'lat':vk_message['geo']['coordinates']['latitude'], 'lon':vk_message['geo']['coordinates']['longitude'], 'alt':users_info[user_id]['return_settings']['alt'], 'speed':users_info[user_id]['return_settings']['speed'], 'action':users_info[user_id]['return_settings']['action']}})
-								users_info[user_id]['location_stat'] = False
-							elif users_info[user_id]['return_settings']['to'] == 'takeoff':
-								print('ok4')
+						if users_info[user_id]['location_stat'] == True and users_info[user_id]['return_settings']['speed'] != None and users_info[user_id]['return_settings']['alt'] != None and users_info[user_id]['return_settings']['action'] != None and users_info[user_id]['return_settings']['to'] != None:
+							if users_info[user_id]['return_settings']['to'] == 'takeoff':
 								users_info[user_id]['location_stat'] = False
 								sio.emit('req', {'body':'returnToHome', 'data':{'to':'takeoff', 'alt':users_info[user_id]['return_settings']['alt'], 'speed':users_info[user_id]['return_settings']['speed'], 'action':users_info[user_id]['return_settings']['action']}})
-						except Exception as E:
-							print(E)
+								Main.send_msg(message = resp['done'], keyboard = Keyboards.keyboard_menu.get_keyboard())
+
+							elif users_info[user_id]['location_stat'] == True and text.lower() == "stop":
+								users_info[user_id]['location_stat'] = False
+							
+							elif text.lower() != 'return' and users_info[user_id]['return_settings']['to'] == 'user':
+								
+								try:
+									sio.emit('req', {'body':'returnToHome', 'data':{'to':'user', 'lat':vk_message['geo']['coordinates']['latitude'], 'lon':vk_message['geo']['coordinates']['longitude'], 'alt':users_info[user_id]['return_settings']['alt'], 'speed':users_info[user_id]['return_settings']['speed'], 'action':users_info[user_id]['return_settings']['action']}})
+									users_info[user_id]['location_stat'] = False
+									Main.send_msg(message = resp['done'], keyboard = Keyboards.keyboard_menu.get_keyboard())
+								except Exception as E:
+									time.sleep(0.1)
+						else:
+							Main.send_msg(message = 'Кажется, вы не настроили параметры возврата, текущие параметры:' + str(users_info[user_id]['return_settings']), keyboard = Keyboards.keyboard_menu.get_keyboard())
+							users_info[user_id]['location_stat'] = False
+
 
 				if text.lower() == 'return settings':
 					users_info[user_id]['settings_stat'] = True
