@@ -19,7 +19,7 @@ responses = {
 	'en':{
 		'upload_file':"Send the file to be uploaded to the quadcopter, please note that the file must have a '.py' extension.",
 		'dont_code':"This doesn't look like code, make sure you submit a '.py' file.",
-		'done':"Successfull.",
+		'done':"Success.",
 		'stop':"Suspended.",
 		'photo':'Last photo from clover.',
 		'return':["I return to the user's coordinates.","I return to the takeoff coordinates.", "Return parameters not configured, current parameters: "],
