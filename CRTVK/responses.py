@@ -30,7 +30,7 @@ responses = {
 				'!!!First, enter your login, and then the password!!!',
 				'Such a user does not exist. Check if your login is correct or register on the site, and then try again. https://bit.ly/3tWpqCw',
 				'Wrong password, please try again.',
-				'Successfull.'
+				'Success.'
 				]
 	}			
 }
