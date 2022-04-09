@@ -1,7 +1,6 @@
 import os #Import standart python modules.
 import time
 import json
-import random
 import urllib.request
 
 import base64 #Import libraries.
