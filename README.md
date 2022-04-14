@@ -1,6 +1,8 @@
 # CRTVkbot
 A bot on the social network VK is an example of what you can do based on our project. This bot has the main functionality of our site and The Clover Rescue Team is still working on bot's features.
 
+[Demonstration video of the bot](https://youtu.be/N3oFobVCmx4)
+
 ## How can I get the id of my VK group?
 <code>group_id ='Your group id'</code>
 
